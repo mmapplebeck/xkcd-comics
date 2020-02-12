@@ -12,28 +12,38 @@ const ComicsRow = styled.div`
   justify-content: center;
 `;
 
-const Loader = styled.div`
+const Notice = styled.div`
   text-align: center;
   color: #666;
-  font-size: 2rem;
   padding-top: 1rem;
+  font-size: 1.5rem;
+
+  @media (min-width: ${largeScreenSize}) {
+    font-size: 2rem;
+  }
 `;
 
 function Comics() {
   const [comics, setComics] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
   const isLargerScreen = useMediaQuery({
     query: `(min-width: ${largeScreenSize})`
   });
 
   useEffect(() => {
-    ComicsService.getComics().then(comics => {
-      setComics(comics);
-    });
+    ComicsService.getComics()
+      .then(comics => {
+        setComics(comics);
+      })
+      .finally(() => {
+        setIsLoaded(true);
+      });
   }, []);
 
   return (
     <>
-      {comics.length === 0 && <Loader>Loading&hellip;</Loader>}
+      {comics.length === 0 && !isLoaded && <Notice>Loading&hellip;</Notice>}
+      {comics.length === 0 && isLoaded && <Notice>No comics found.</Notice>}
       {comics.length > 0 &&
         chunk(comics, isLargerScreen ? 4 : 2).map(comicsRow => (
           <ComicsRow key={comicsRow[0].num}>
